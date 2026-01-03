@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import ReactDOM from 'react-dom';
-import { BookOpen, Sun, Moon } from 'lucide-react';
 import './index.css';
 
 export default function SapiensWebsite() {
