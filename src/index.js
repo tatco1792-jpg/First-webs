@@ -230,9 +230,9 @@ function SapiensWebsite() {
                 {selectedChapter?.id === chapter.id && (
                   <div style={{ marginTop: '1rem', paddingTop: '1rem', borderTop: `2px solid ${borderColor}` }}>
                     <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem', flexWrap: 'wrap' }}>
-                      {['excerpt', 'questions', 'images'].map((tab) => (
+                      {['excerpt', 'questions'].map((tab) => (
                         <button key={tab} onClick={(e) => { e.stopPropagation(); setActiveTab(tab); }} style={{ padding: '0.5rem 0.75rem', borderRadius: '0.25rem', border: 'none', cursor: 'pointer', background: activeTab === tab ? (darkMode ? '#f59e0b' : '#b45309') : (darkMode ? '#1f2937' : '#fef08a'), color: activeTab === tab ? 'white' : (darkMode ? '#fcd34d' : '#78350f'), fontWeight: '500', transition: 'all 0.3s' }}>
-                          {tab === 'excerpt' ? 'Отрывок' : tab === 'questions' ? 'Вопросы' : 'Изображения'}
+                          {tab === 'excerpt' ? 'Отрывок' : 'Вопросы'}
                         </button>
                       ))}
                     </div>
@@ -248,16 +248,6 @@ function SapiensWebsite() {
                             </li>
                           ))}
                         </ul>
-                      </div>
-                    )}
-                    {activeTab === 'images' && (
-                      <div>
-                        <p style={{ fontSize: '0.875rem', fontWeight: '600', color: darkMode ? '#fcd34d' : '#78350f', marginBottom: '0.75rem' }}>Визуальные материалы:</p>
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '0.75rem' }}>
-                          {chapter.images.map((img, idx) => (
-                            <img key={idx} src={img} alt={`Изображение ${idx + 1}`} style={{ width: '100%', height: '128px', objectFit: 'cover', borderRadius: '0.5rem', border: `1px solid ${borderColor}` }} />
-                          ))}
-                        </div>
                       </div>
                     )}
                   </div>
