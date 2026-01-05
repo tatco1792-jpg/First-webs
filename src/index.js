@@ -8,6 +8,19 @@ function SapiensWebsite() {
   const [activeTab, setActiveTab] = useState('excerpt');
   const [darkMode, setDarkMode] = useState(false);
 
+  const timelineEvents = [
+    { id: 1, title: '13.5 млрд лет назад', event: 'Возникновение материи и энергии', icon: '🌌' },
+    { id: 2, title: '70,000 лет назад', event: 'Когнитивная революция', icon: '💡' },
+    { id: 3, title: '12,000 лет назад', event: 'Аграрная революция', icon: '🌾' },
+    { id: 4, title: '5,000 лет назад', event: 'Появление письменности', icon: '📜' },
+    { id: 5, title: '2,000 лет назад', event: 'Расцвет древних империй', icon: '👑' },
+    { id: 6, title: '1492', event: 'Встреча с Америкой', icon: '⛵' },
+    { id: 7, title: '1600s', event: 'Научная революция', icon: '🔬' },
+    { id: 8, title: '1800s', event: 'Индустриальная революция', icon: '⚙️' },
+    { id: 9, title: 'Сегодня', event: 'Цифровая эпоха', icon: '💻' },
+    { id: 10, title: 'Будущее', event: 'Эпоха искусственного интеллекта', icon: '🤖' }
+  ];
+
   const chapters = [
     {
       id: 1,
@@ -120,6 +133,7 @@ function SapiensWebsite() {
   const cardBg = darkMode ? '#1f2937' : '#ffffff';
   const textColor = darkMode ? '#ffffff' : '#000000';
   const borderColor = darkMode ? '#374151' : '#fed7aa';
+  const timelineColor = darkMode ? '#3b82f6' : '#f59e0b';
 
   return (
     <div style={{ minHeight: '100vh', background: bgColor, transition: 'background 0.3s', color: textColor }}>
@@ -142,6 +156,53 @@ function SapiensWebsite() {
         </div>
         <div style={{ background: `linear-gradient(135deg, ${darkMode ? '#374151' : '#fcd34d'} 0%, ${darkMode ? '#1f2937' : '#e5e7eb'} 100%)`, borderRadius: '1rem', padding: '2rem', textAlign: 'center', boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)' }}>
           <p style={{ color: darkMode ? '#fcd34d' : '#78350f', fontWeight: '600', fontSize: '1.125rem', fontStyle: 'italic', margin: 0 }}>История не движется к цели</p>
+        </div>
+      </section>
+
+      <section style={{ maxWidth: '1200px', margin: '0 auto', padding: '3rem 1rem', background: darkMode ? 'rgba(31, 41, 55, 0.5)' : 'rgba(254, 243, 199, 0.3)', borderRadius: '1rem', marginBottom: '3rem' }}>
+        <h3 style={{ fontSize: '2rem', fontWeight: 'bold', color: darkMode ? '#fcd34d' : '#78350f', marginBottom: '2rem', textAlign: 'center' }}>⏳ Временная шкала истории</h3>
+        
+        <div style={{ position: 'relative', paddingLeft: '3rem' }}>
+          {timelineEvents.map((event, idx) => (
+            <div key={event.id} style={{ marginBottom: '2rem', position: 'relative' }}>
+              <div style={{ 
+                position: 'absolute', 
+                left: '-2.5rem', 
+                top: '0', 
+                width: '2rem', 
+                height: '2rem', 
+                background: timelineColor, 
+                borderRadius: '50%', 
+                display: 'flex', 
+                alignItems: 'center', 
+                justifyContent: 'center',
+                fontSize: '1rem',
+                fontWeight: 'bold',
+                boxShadow: `0 0 0 4px ${cardBg}, 0 0 0 6px ${timelineColor}`,
+                zIndex: 2
+              }}>
+                {event.icon}
+              </div>
+              
+              {idx < timelineEvents.length - 1 && (
+                <div style={{ 
+                  position: 'absolute', 
+                  left: '-1.85rem', 
+                  top: '2rem', 
+                  width: '2px', 
+                  height: '2rem', 
+                  background: timelineColor,
+                  opacity: 0.3,
+                  zIndex: 1
+                }} />
+              )}
+              
+              <div style={{ background: cardBg, padding: '1rem', borderRadius: '0.5rem', border: `1px solid ${borderColor}`, cursor: 'pointer', transition: 'all 0.3s', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }} onClick={() => setSelectedChapter(chapters[event.id - 1])}>
+                <p style={{ fontSize: '0.875rem', fontWeight: 'bold', color: timelineColor, margin: '0 0 0.5rem 0' }}>{event.title}</p>
+                <p style={{ fontSize: '1.125rem', fontWeight: '600', color: darkMode ? '#fcd34d' : '#78350f', margin: '0' }}>{event.event}</p>
+              </div>
+            </div>
+          ))}
         </div>
       </section>
 
