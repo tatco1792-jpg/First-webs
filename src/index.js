@@ -341,8 +341,16 @@ function SapiensWebsite() {
         
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '2rem', background: cardBg, padding: '2rem', borderRadius: '1rem', border: `2px solid ${borderColor}`, boxShadow: '0 10px 30px rgba(0,0,0,0.1)' }}>
           <div data-animate="true" id="author-photo" style={{ ...fadeInStyle('author-photo'), display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-            <div style={{ width: '200px', height: '200px', borderRadius: '50%', overflow: 'hidden', border: `4px solid ${darkMode ? '#f59e0b' : '#b45309'}`, marginBottom: '1rem', boxShadow: '0 8px 20px rgba(0,0,0,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', background: `linear-gradient(135deg, ${darkMode ? '#374151' : '#fef3c7'} 0%, ${darkMode ? '#1f2937' : '#fed7aa'} 100%)`, fontSize: '5rem' }}>
-              👤
+            <div style={{ width: '200px', height: '200px', borderRadius: '50%', overflow: 'hidden', border: `4px solid ${darkMode ? '#f59e0b' : '#b45309'}`, marginBottom: '1rem', boxShadow: '0 8px 20px rgba(0,0,0,0.2)', background: '#f3f4f6' }}>
+              <img 
+                src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/e8/MKr364751_Yuval_Noah_Harari_%28Frankfurter_Buchmesse_2024%29.jpg/400px-MKr364751_Yuval_Noah_Harari_%28Frankfurter_Buchmesse_2024%29.jpg" 
+                alt="Юваль Ной Харари" 
+                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                onError={(e) => {
+                  e.target.style.display = 'none';
+                  e.target.parentElement.innerHTML = '<div style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-size: 5rem; background: linear-gradient(135deg, #fef3c7 0%, #fed7aa 100%)">👤</div>';
+                }}
+              />
             </div>
             <h4 style={{ fontSize: '1.5rem', fontWeight: 'bold', color: darkMode ? '#fcd34d' : '#78350f', margin: '0 0 0.5rem 0' }}>Юваль Ной Харари</h4>
             <p style={{ color: darkMode ? '#d1d5db' : '#78716c', fontSize: '0.875rem', textAlign: 'center', margin: 0 }}>Историк, философ, писатель</p>
