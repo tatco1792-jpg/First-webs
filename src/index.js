@@ -456,33 +456,7 @@ function SapiensWebsite() {
         </div>
       </section>
 
-      <section style={{ background: `linear-gradient(90deg, ${darkMode ? '#1f2937' : '#fef3c7'} 0%, ${darkMode ? '#111827' : '#f5f3f0'} 100%)`, padding: '3rem 1rem', marginTop: '3rem' }}>
-        <div style={{ maxWidth: '1200px', margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '2rem', textAlign: 'center' }}>
-          <div data-animate="true" id="stat-1" style={fadeInStyle('stat-1')}>
-            <p style={{ fontSize: '2.25rem', fontWeight: 'bold', color: darkMode ? '#fbbf24' : '#92400e', margin: 0, marginBottom: '0.5rem' }}>10</p>
-            <p style={{ color: darkMode ? '#d1d5db' : '#78716c', margin: 0 }}>Основных глав</p>
-          </div>
-          <div data-animate="true" id="stat-2" style={fadeInStyle('stat-2')}>
-            <p style={{ fontSize: '2.25rem', fontWeight: 'bold', color: darkMode ? '#fbbf24' : '#92400e', margin: 0, marginBottom: '0.5rem' }}>70k+</p>
-            <p style={{ color: darkMode ? '#d1d5db' : '#78716c', margin: 0 }}>Лет истории</p>
-          </div>
-          <div data-animate="true" id="stat-3" style={fadeInStyle('stat-3')}>
-            <p style={{ fontSize: '2.25rem', fontWeight: 'bold', color: darkMode ? '#fbbf24' : '#92400e', margin: 0, marginBottom: '0.5rem' }}>3</p>
-            <p style={{ color: darkMode ? '#d1d5db' : '#78716c', margin: 0 }}>Великих революции</p>
-          </div>
-        </div>
-      </section>
 
-      <footer style={{ background: darkMode ? '#1f2937' : '#fef3c7', padding: '2rem 1rem', borderTop: `1px solid ${borderColor}`, marginTop: '3rem' }}>
-        <div style={{ maxWidth: '1200px', margin: '0 auto', textAlign: 'center' }}>
-          <p style={{ color: darkMode ? '#d1d5db' : '#78716c', margin: 0 }}>
-            © 2025 Sapiens — Краткая история человечества
-          </p>
-          <p style={{ color: darkMode ? '#9ca3af' : '#a8a29e', fontSize: '0.875rem', marginTop: '0.5rem' }}>
-            По мотивам книги Юваля Ноя Харари
-          </p>
-        </div>
-      </footer>
     </div>
   );
 }
