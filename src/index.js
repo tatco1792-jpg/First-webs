@@ -1,17 +1,23 @@
 import React, { useState, useEffect } from 'react';
-import ReactDOM from 'react-dom';
+import { createRoot } from 'react-dom/client';
 import './index.css';
 
 function SapiensWebsite() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedChapter, setSelectedChapter] = useState(null);
-  const [activeTab, setActiveTab] = useState('excerpt');
+  const [chapterTabs, setChapterTabs] = useState({});
   const [darkMode, setDarkMode] = useState(false);
   const [scrollY, setScrollY] = useState(0);
+  const [scrollProgress, setScrollProgress] = useState(0);
   const [visibleElements, setVisibleElements] = useState({});
 
   useEffect(() => {
-    const handleScroll = () => setScrollY(window.scrollY);
+    const handleScroll = () => {
+      const currentY = window.scrollY;
+      setScrollY(currentY);
+      const totalHeight = document.body.scrollHeight - window.innerHeight;
+      setScrollProgress(totalHeight > 0 ? (currentY / totalHeight) * 100 : 0);
+    };
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
@@ -25,7 +31,13 @@ function SapiensWebsite() {
       });
     }, { threshold: 0.1 });
 
-    document.querySelectorAll('[data-animate]').forEach(el => observer.observe(el));
+    document.querySelectorAll('[data-animate]').forEach(el => {
+      const rect = el.getBoundingClientRect();
+      if (rect.top < window.innerHeight) {
+        setVisibleElements(prev => ({ ...prev, [el.id]: true }));
+      }
+      observer.observe(el);
+    });
     return () => observer.disconnect();
   }, []);
 
@@ -157,13 +169,37 @@ function SapiensWebsite() {
     transition: 'all 0.8s ease-out'
   });
 
+  const getActiveTab = (chapterId) => chapterTabs[chapterId] || 'excerpt';
+
+  const setActiveTab = (chapterId, tab) => {
+    setChapterTabs(prev => ({ ...prev, [chapterId]: tab }));
+  };
+
+  const handleTimelineClick = (chapterIndex, chapterId) => {
+    setSelectedChapter(chapters[chapterIndex]);
+    setTimeout(() => {
+      document.getElementById(`chapter-${chapterId}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 100);
+  };
+
+  const handleChapterClick = (chapter) => {
+    setSelectedChapter(selectedChapter?.id === chapter.id ? null : chapter);
+  };
+
   return (
     <div style={{ minHeight: '100vh', background: bgColor, transition: 'background 0.3s', color: textColor }}>
+      {/* Прогресс-бар прокрутки */}
+      <div style={{
+        position: 'fixed', top: 0, left: 0, height: '3px',
+        width: `${scrollProgress}%`, background: '#f59e0b',
+        zIndex: 200, transition: 'width 0.1s ease-out'
+      }} />
+
       <style>{`
         * { scroll-behavior: smooth; }
-        @keyframes glow { 
-          0%, 100% { box-shadow: 0 0 20px rgba(245, 158, 11, 0.3); } 
-          50% { box-shadow: 0 0 30px rgba(245, 158, 11, 0.6); } 
+        @keyframes glow {
+          0%, 100% { box-shadow: 0 0 20px rgba(245, 158, 11, 0.3); }
+          50% { box-shadow: 0 0 30px rgba(245, 158, 11, 0.6); }
         }
         .glow-card:hover { animation: glow 2s ease-in-out; }
       `}</style>
@@ -180,9 +216,9 @@ function SapiensWebsite() {
         </div>
       </nav>
 
-      <section style={{ maxWidth: '1200px', margin: '0 auto', padding: '3rem 1rem', ...parallaxStyle }}>
+      <section className="hero-section" style={{ maxWidth: '1200px', margin: '0 auto', padding: '3rem 1rem', ...parallaxStyle }}>
         <div data-animate="true" id="hero" style={fadeInStyle('hero')}>
-          <h2 style={{ fontSize: '3rem', fontWeight: 'bold', background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', marginBottom: '1rem' }}>
+          <h2 className="hero-title" style={{ fontSize: '3rem', fontWeight: 'bold', background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', marginBottom: '1rem' }}>
             Краткая история человечества
           </h2>
           <p style={{ fontSize: '1.125rem', color: darkMode ? '#d1d5db' : '#57534e', lineHeight: '1.6' }}>
@@ -195,20 +231,20 @@ function SapiensWebsite() {
         <h3 data-animate="true" id="timeline-title" style={{ fontSize: '2rem', fontWeight: 'bold', color: darkMode ? '#fcd34d' : '#78350f', marginBottom: '2rem', textAlign: 'center', ...fadeInStyle('timeline-title') }}>
           ⏳ Временная шкала истории
         </h3>
-        
+
         <div style={{ position: 'relative', paddingLeft: '3rem' }}>
           {timelineEvents.map((event, idx) => (
             <div key={event.id} data-animate="true" id={`timeline-${event.id}`} style={{ marginBottom: '2rem', position: 'relative', ...fadeInStyle(`timeline-${event.id}`) }}>
-              <div style={{ 
-                position: 'absolute', 
-                left: '-2.5rem', 
-                top: '0', 
-                width: '2rem', 
-                height: '2rem', 
-                background: timelineColor, 
-                borderRadius: '50%', 
-                display: 'flex', 
-                alignItems: 'center', 
+              <div style={{
+                position: 'absolute',
+                left: '-2.5rem',
+                top: '0',
+                width: '2rem',
+                height: '2rem',
+                background: timelineColor,
+                borderRadius: '50%',
+                display: 'flex',
+                alignItems: 'center',
                 justifyContent: 'center',
                 fontSize: '1rem',
                 boxShadow: `0 0 0 4px ${cardBg}, 0 0 0 6px ${timelineColor}`,
@@ -217,21 +253,25 @@ function SapiensWebsite() {
               }}>
                 {event.icon}
               </div>
-              
+
               {idx < timelineEvents.length - 1 && (
-                <div style={{ 
-                  position: 'absolute', 
-                  left: '-1.85rem', 
-                  top: '2rem', 
-                  width: '2px', 
-                  height: '2rem', 
+                <div style={{
+                  position: 'absolute',
+                  left: '-1.85rem',
+                  top: '2rem',
+                  width: '2px',
+                  height: '2rem',
                   background: timelineColor,
                   opacity: 0.3,
                   zIndex: 1
                 }} />
               )}
-              
-              <div className="glow-card" style={{ background: cardBg, padding: '1rem', borderRadius: '0.5rem', border: `1px solid ${borderColor}`, cursor: 'pointer', transition: 'all 0.3s ease' }} onClick={() => setSelectedChapter(chapters[event.id - 1])}>
+
+              <div
+                className="glow-card"
+                style={{ background: cardBg, padding: '1rem', borderRadius: '0.5rem', border: `1px solid ${borderColor}`, cursor: 'pointer', transition: 'all 0.3s ease' }}
+                onClick={() => handleTimelineClick(event.id - 1, event.id)}
+              >
                 <p style={{ fontSize: '0.875rem', fontWeight: 'bold', color: timelineColor, margin: '0 0 0.5rem 0' }}>{event.title}</p>
                 <p style={{ fontSize: '1.125rem', fontWeight: '600', color: darkMode ? '#fcd34d' : '#78350f', margin: '0' }}>{event.event}</p>
               </div>
@@ -242,12 +282,12 @@ function SapiensWebsite() {
 
       <section style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 1rem 2rem' }}>
         <div style={{ position: 'relative', marginBottom: '2rem' }}>
-          <input 
-            type="text" 
-            placeholder="Поиск по главам..." 
-            value={searchTerm} 
-            onChange={(e) => setSearchTerm(e.target.value)} 
-            style={{ width: '100%', padding: '0.75rem 1rem 0.75rem 2.5rem', border: `2px solid ${borderColor}`, borderRadius: '0.5rem', fontSize: '1rem', backgroundColor: cardBg, color: textColor }} 
+          <input
+            type="text"
+            placeholder="Поиск по главам..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            style={{ width: '100%', padding: '0.75rem 1rem 0.75rem 2.5rem', border: `2px solid ${borderColor}`, borderRadius: '0.5rem', fontSize: '1rem', backgroundColor: cardBg, color: textColor, boxSizing: 'border-box' }}
           />
           <span style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)' }}>🔍</span>
         </div>
@@ -260,22 +300,22 @@ function SapiensWebsite() {
             <p style={{ color: darkMode ? '#9ca3af' : '#9f9b97', fontSize: '1.125rem' }}>Главы не найдены</p>
           </div>
         ) : (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '1.5rem' }}>
+          <div className="chapters-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '1.5rem' }}>
             {filteredChapters.map((chapter) => (
-              <div 
-                key={chapter.id} 
-                data-animate="true" 
-                id={`chapter-${chapter.id}`} 
-                style={{ 
-                  ...fadeInStyle(`chapter-${chapter.id}`), 
-                  padding: '1.5rem', 
-                  borderRadius: '1rem', 
-                  border: `2px solid ${selectedChapter?.id === chapter.id ? (darkMode ? '#fbbf24' : '#b45309') : borderColor}`, 
-                  background: selectedChapter?.id === chapter.id ? (darkMode ? 'linear-gradient(135deg, #374151 0%, #1f2937 100%)' : 'linear-gradient(135deg, #fef3c7 0%, #fce7f3 100%)') : cardBg, 
-                  cursor: 'pointer', 
+              <div
+                key={chapter.id}
+                data-animate="true"
+                id={`chapter-${chapter.id}`}
+                style={{
+                  ...fadeInStyle(`chapter-${chapter.id}`),
+                  padding: '1.5rem',
+                  borderRadius: '1rem',
+                  border: `2px solid ${selectedChapter?.id === chapter.id ? (darkMode ? '#fbbf24' : '#b45309') : borderColor}`,
+                  background: selectedChapter?.id === chapter.id ? (darkMode ? 'linear-gradient(135deg, #374151 0%, #1f2937 100%)' : 'linear-gradient(135deg, #fef3c7 0%, #fce7f3 100%)') : cardBg,
+                  cursor: 'pointer',
                   transition: 'all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)'
-                }} 
-                onClick={() => setSelectedChapter(selectedChapter?.id === chapter.id ? null : chapter)}
+                }}
+                onClick={() => handleChapterClick(chapter)}
               >
                 <div style={{ display: 'flex', alignItems: 'start', gap: '1rem' }}>
                   <div style={{ fontSize: '2.5rem', flexShrink: 0 }}>{chapter.icon}</div>
@@ -285,35 +325,48 @@ function SapiensWebsite() {
                     </h4>
                     <p style={{ color: darkMode ? '#d1d5db' : '#78716c', margin: 0 }}>{chapter.description}</p>
                   </div>
+                  {selectedChapter?.id === chapter.id && (
+                    <button
+                      onClick={(e) => { e.stopPropagation(); setSelectedChapter(null); }}
+                      style={{
+                        background: 'none', border: 'none', cursor: 'pointer',
+                        fontSize: '1.2rem', color: darkMode ? '#9ca3af' : '#78716c',
+                        padding: '0.25rem', lineHeight: 1, flexShrink: 0
+                      }}
+                      title="Закрыть"
+                    >
+                      ✕
+                    </button>
+                  )}
                 </div>
                 {selectedChapter?.id === chapter.id && (
                   <div style={{ marginTop: '1rem', paddingTop: '1rem', borderTop: `2px solid ${borderColor}` }}>
                     <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem', flexWrap: 'wrap' }}>
                       {['excerpt', 'questions'].map((tab) => (
-                        <button 
-                          key={tab} 
-                          onClick={(e) => { e.stopPropagation(); setActiveTab(tab); }} 
-                          style={{ 
-                            padding: '0.5rem 0.75rem', 
-                            borderRadius: '0.25rem', 
-                            border: 'none', 
-                            cursor: 'pointer', 
-                            background: activeTab === tab ? (darkMode ? '#f59e0b' : '#b45309') : (darkMode ? '#1f2937' : '#fef08a'), 
-                            color: activeTab === tab ? 'white' : (darkMode ? '#fcd34d' : '#78350f'), 
-                            fontWeight: '500' 
+                        <button
+                          key={tab}
+                          onClick={(e) => { e.stopPropagation(); setActiveTab(chapter.id, tab); }}
+                          style={{
+                            padding: '0.5rem 0.75rem',
+                            borderRadius: '0.25rem',
+                            border: 'none',
+                            cursor: 'pointer',
+                            background: getActiveTab(chapter.id) === tab ? (darkMode ? '#f59e0b' : '#b45309') : (darkMode ? '#1f2937' : '#fef08a'),
+                            color: getActiveTab(chapter.id) === tab ? 'white' : (darkMode ? '#fcd34d' : '#78350f'),
+                            fontWeight: '500'
                           }}
                         >
                           {tab === 'excerpt' ? 'Отрывок' : 'Вопросы'}
                         </button>
                       ))}
                     </div>
-                    {activeTab === 'excerpt' && (
+                    {getActiveTab(chapter.id) === 'excerpt' && (
                       <div>
                         <p style={{ fontSize: '0.875rem', fontWeight: '600', color: darkMode ? '#fcd34d' : '#78350f', marginBottom: '0.5rem' }}>Отрывок:</p>
                         <p style={{ color: darkMode ? '#d1d5db' : '#57534e', lineHeight: '1.6', fontStyle: 'italic', margin: 0 }}>{chapter.excerpt}</p>
                       </div>
                     )}
-                    {activeTab === 'questions' && (
+                    {getActiveTab(chapter.id) === 'questions' && (
                       <div>
                         <p style={{ fontSize: '0.875rem', fontWeight: '600', color: darkMode ? '#fcd34d' : '#78350f', marginBottom: '0.75rem' }}>Вопросы для рефлексии:</p>
                         <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
@@ -338,26 +391,39 @@ function SapiensWebsite() {
         <h3 data-animate="true" id="author-title" style={{ fontSize: '2rem', fontWeight: 'bold', color: darkMode ? '#fcd34d' : '#78350f', marginBottom: '2rem', textAlign: 'center', ...fadeInStyle('author-title') }}>
           👤 Об авторе
         </h3>
-        
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '2rem', background: cardBg, padding: '2rem', borderRadius: '1rem', border: `2px solid ${borderColor}`, boxShadow: '0 10px 30px rgba(0,0,0,0.1)' }}>
+
+        <div className="author-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '2rem', background: cardBg, padding: '2rem', borderRadius: '1rem', border: `2px solid ${borderColor}`, boxShadow: '0 10px 30px rgba(0,0,0,0.1)' }}>
           <div data-animate="true" id="author-photo" style={{ ...fadeInStyle('author-photo'), display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-            <div style={{ width: '200px', height: '200px', borderRadius: '50%', overflow: 'hidden', border: `4px solid ${darkMode ? '#f59e0b' : '#b45309'}`, marginBottom: '1rem', boxShadow: '0 8px 20px rgba(0,0,0,0.2)' }}>
-              <img 
-                src="/images/harari.jpg" 
-                alt="Юваль Ной Харари" 
+            <div style={{ width: '200px', height: '200px', borderRadius: '50%', overflow: 'hidden', border: `4px solid ${darkMode ? '#f59e0b' : '#b45309'}`, marginBottom: '1rem', boxShadow: '0 8px 20px rgba(0,0,0,0.2)', position: 'relative' }}>
+              <img
+                src="/images/harari.jpg"
+                alt="Юваль Ной Харари"
                 style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                onError={(e) => {
+                  e.target.style.display = 'none';
+                  e.target.nextSibling.style.display = 'flex';
+                }}
               />
+              <div style={{
+                display: 'none', width: '100%', height: '100%',
+                alignItems: 'center', justifyContent: 'center',
+                background: darkMode ? '#374151' : '#fde68a',
+                color: darkMode ? '#fcd34d' : '#78350f',
+                fontSize: '3rem', fontWeight: 'bold', position: 'absolute', top: 0, left: 0
+              }}>
+                ЮН
+              </div>
             </div>
             <h4 style={{ fontSize: '1.5rem', fontWeight: 'bold', color: darkMode ? '#fcd34d' : '#78350f', margin: '0 0 0.5rem 0' }}>Юваль Ной Харари</h4>
             <p style={{ color: darkMode ? '#d1d5db' : '#78716c', fontSize: '0.875rem', textAlign: 'center', margin: 0 }}>Историк, философ, писатель</p>
           </div>
-          
+
           <div data-animate="true" id="author-bio" style={fadeInStyle('author-bio')}>
             <h5 style={{ fontSize: '1.25rem', fontWeight: 'bold', color: darkMode ? '#fbbf24' : '#92400e', marginBottom: '1rem' }}>📚 Биография</h5>
             <p style={{ color: darkMode ? '#d1d5db' : '#57534e', lineHeight: '1.6', marginBottom: '1.5rem' }}>
               Юваль Ной Харари — израильский историк и профессор, специализирующийся на всемирной истории. Родился в 1976 году в Хайфе, Израиль. Его работы сосредоточены на макроисторических вопросах: что отличает человека от других животных? Есть ли справедливость в истории? Счастливы ли люди стали с течением времени?
             </p>
-            
+
             <h5 style={{ fontSize: '1.25rem', fontWeight: 'bold', color: darkMode ? '#fbbf24' : '#92400e', marginBottom: '1rem' }}>🎓 Академический путь</h5>
             <ul style={{ color: darkMode ? '#d1d5db' : '#57534e', lineHeight: '1.8', paddingLeft: '1.5rem', marginBottom: '1.5rem' }}>
               <li>Бакалавриат по истории в Еврейском университете в Иерусалиме (2000)</li>
@@ -366,19 +432,19 @@ function SapiensWebsite() {
               <li>Профессор истории в Еврейском университете с 2005 года</li>
               <li>Специализация: военная история, средневековье, всемирная история</li>
             </ul>
-            
+
             <h5 style={{ fontSize: '1.25rem', fontWeight: 'bold', color: darkMode ? '#fbbf24' : '#92400e', marginBottom: '1rem' }}>✨ Достижения</h5>
             <p style={{ color: darkMode ? '#d1d5db' : '#57534e', lineHeight: '1.6', margin: 0 }}>
               Книги Харари переведены на 65 языков и проданы тиражом более 35 миллионов экземпляров. Его лекции посещают мировые лидеры, включая Эммануэля Макрона, Ангелу Меркель и Марка Цукерберга. В 2019 году Харари и его муж Ицик Яхав основали Sapienship — организацию, занимающуюся глобальными проблемами.
             </p>
           </div>
         </div>
-        
+
         <h3 data-animate="true" id="other-books-title" style={{ fontSize: '2rem', fontWeight: 'bold', color: darkMode ? '#fcd34d' : '#78350f', marginBottom: '2rem', marginTop: '4rem', textAlign: 'center', ...fadeInStyle('other-books-title') }}>
           📖 Другие книги автора
         </h3>
-        
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.5rem' }}>
+
+        <div className="books-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.5rem' }}>
           {[
             {
               title: 'Homo Deus: Краткая история будущего',
@@ -402,16 +468,16 @@ function SapiensWebsite() {
               topics: ['Графика', 'История', 'Комикс']
             }
           ].map((book, idx) => (
-            <div 
-              key={idx} 
-              data-animate="true" 
-              id={`book-${idx}`} 
-              style={{ 
-                ...fadeInStyle(`book-${idx}`), 
-                background: cardBg, 
-                padding: '1.5rem', 
-                borderRadius: '1rem', 
-                border: `2px solid ${borderColor}`, 
+            <div
+              key={idx}
+              data-animate="true"
+              id={`book-${idx}`}
+              style={{
+                ...fadeInStyle(`book-${idx}`),
+                background: cardBg,
+                padding: '1.5rem',
+                borderRadius: '1rem',
+                border: `2px solid ${borderColor}`,
                 transition: 'all 0.3s ease',
                 cursor: 'pointer'
               }}
@@ -436,13 +502,13 @@ function SapiensWebsite() {
               </p>
               <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
                 {book.topics.map((topic, topicIdx) => (
-                  <span 
-                    key={topicIdx} 
-                    style={{ 
-                      padding: '0.25rem 0.75rem', 
-                      background: darkMode ? '#374151' : '#fef08a', 
-                      color: darkMode ? '#fcd34d' : '#78350f', 
-                      borderRadius: '1rem', 
+                  <span
+                    key={topicIdx}
+                    style={{
+                      padding: '0.25rem 0.75rem',
+                      background: darkMode ? '#374151' : '#fef08a',
+                      color: darkMode ? '#fcd34d' : '#78350f',
+                      borderRadius: '1rem',
                       fontSize: '0.75rem',
                       fontWeight: '500'
                     }}
@@ -456,9 +522,28 @@ function SapiensWebsite() {
         </div>
       </section>
 
-
+      {/* Кнопка «наверх» */}
+      {scrollY > 300 && (
+        <button
+          onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+          style={{
+            position: 'fixed', bottom: '2rem', right: '2rem',
+            width: '3rem', height: '3rem', borderRadius: '50%',
+            background: '#f59e0b', color: 'white', border: 'none',
+            fontSize: '1.25rem', cursor: 'pointer', zIndex: 100,
+            boxShadow: '0 4px 12px rgba(0,0,0,0.2)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            transition: 'transform 0.2s, box-shadow 0.2s'
+          }}
+          onMouseEnter={(e) => { e.currentTarget.style.transform = 'scale(1.1)'; }}
+          onMouseLeave={(e) => { e.currentTarget.style.transform = 'scale(1)'; }}
+          title="Наверх"
+        >
+          ↑
+        </button>
+      )}
     </div>
   );
 }
 
-ReactDOM.render(<SapiensWebsite />, document.getElementById('root'));
+createRoot(document.getElementById('root')).render(<SapiensWebsite />);
