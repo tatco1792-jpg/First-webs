@@ -1,1 +1,19 @@
 body { margin: 0; font-family: sans-serif; }
+
+@media (max-width: 500px) {
+  .chapters-grid {
+    grid-template-columns: 1fr !important;
+  }
+  .books-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+@media (max-width: 600px) {
+  .author-grid {
+    grid-template-columns: 1fr !important;
+  }
+  .hero-title {
+    font-size: 1.8rem !important;
+  }
+}
